@@ -106,7 +106,9 @@ static NSString *const kMPVungleAdUserDidDownloadKey = @"didDownload";
         BOOL success = [[VungleSDK sharedSDK] playAd:viewController error:nil];
 
         if (!success) {
-            [delegate vungleAdDidFailToPlay:nil];
+            // In Vungle SDK 3.1.2 playAd may return NO even if the ad started
+            // playing successfully. Ignore return code until the bug is fixed.
+            //[delegate vungleAdDidFailToPlay:nil];
         }
     } else {
         [delegate vungleAdDidFailToPlay:nil];
