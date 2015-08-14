@@ -18,6 +18,7 @@ static NSString *const kMPVungleAdUserDidDownloadKey = @"didDownload";
 @interface MPVungleRouter ()
 
 @property (nonatomic, assign) BOOL isAdPlaying;
+@property (nonatomic, assign) NSInteger checkAdTimeout;
 
 @end
 
@@ -67,17 +68,33 @@ static NSString *const kMPVungleAdUserDidDownloadKey = @"didDownload";
         [[VungleSDK sharedSDK] setDelegate:self];
     });
 
-    // Need to check immediately as an ad may be cached.
-    if ([[VungleSDK sharedSDK] isCachedAdAvailable]) {
-        [self.delegate vungleAdDidLoad];
-    }
+    // Use polling as a workaround because events do not reflect the real state.
+    // We must return to the event-based model when it will be fixed.
+    [self startCheckingAdStatus];
 
     // MoPub timeout will handle the case for an ad failing to load.
 }
 
+- (void)startCheckingAdStatus
+{
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkAdStatus) object:nil];
+	self.checkAdTimeout = 30;
+	[self checkAdStatus];
+}
+
+- (void)checkAdStatus
+{
+	if ([[VungleSDK sharedSDK] isAdPlayable])
+		[self.delegate vungleAdDidLoad];
+	else if (self.checkAdTimeout > 0) {
+		self.checkAdTimeout--;
+		[self performSelector:@selector(checkAdStatus) withObject:nil afterDelay:1.0];
+	}
+}
+
 - (BOOL)isAdAvailable
 {
-    return [[VungleSDK sharedSDK] isCachedAdAvailable];
+    return [[VungleSDK sharedSDK] isAdPlayable];
 }
 
 - (void)presentInterstitialAdFromViewController:(UIViewController *)viewController withDelegate:(id<MPVungleRouterDelegate>)delegate
@@ -136,11 +153,6 @@ static NSString *const kMPVungleAdUserDidDownloadKey = @"didDownload";
 }
 
 #pragma mark - VungleSDKDelegate
-
-- (void)vungleSDKhasCachedAdAvailable
-{
-    [self.delegate vungleAdDidLoad];
-}
 
 - (void)vungleSDKwillShowAd
 {
