@@ -16,8 +16,11 @@ static NSString *gAppId = nil;
 static NSString *const kMPVungleRewardedAdCompletedView = @"completedView";
 static NSString *const kMPVungleAdUserDidDownloadKey = @"didDownload";
 
+static const NSTimeInterval VungleInitTimeout = 2.0;
+
 @interface MPVungleRouter ()
 
+@property (nonatomic, assign) BOOL isWaitingForInit;
 @property (nonatomic, assign) BOOL isAdPlaying;
 
 @end
@@ -66,14 +69,22 @@ static NSString *const kMPVungleAdUserDidDownloadKey = @"didDownload";
 
         [[VungleSDK sharedSDK] startWithAppId:appId];
         [[VungleSDK sharedSDK] setDelegate:self];
+
+        self.isWaitingForInit = true;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(VungleInitTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (self.isWaitingForInit) {
+                self.isWaitingForInit = false;
+                [self.delegate vungleAdDidFailToLoad:nil];
+            }
+        });
     });
 
-    // Need to check immediately as an ad may be cached.
-    if ([[VungleSDK sharedSDK] isAdPlayable]) {
-        [self.delegate vungleAdDidLoad];
+    if (!self.isWaitingForInit) {
+        if ([[VungleSDK sharedSDK] isAdPlayable])
+            [self.delegate vungleAdDidLoad];
+        else
+            [self.delegate vungleAdDidFailToLoad:nil];
     }
-
-    // MoPub timeout will handle the case for an ad failing to load.
 }
 
 - (BOOL)isAdAvailable
@@ -143,7 +154,8 @@ static NSString *const kMPVungleAdUserDidDownloadKey = @"didDownload";
 
 - (void)vungleSDKAdPlayableChanged:(BOOL)isAdPlayable
 {
-    if (isAdPlayable) {
+    if (self.isWaitingForInit && isAdPlayable) {
+        self.isWaitingForInit = false;
         [self.delegate vungleAdDidLoad];
     }
 }
