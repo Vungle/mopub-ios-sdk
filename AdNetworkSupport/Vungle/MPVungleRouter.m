@@ -12,6 +12,8 @@
 #import "MPRewardedVideoError.h"
 #import "MPRewardedVideo.h"
 
+static NSString * const VunglePluginVersion = @"1_0_0";
+
 static NSString *gAppId = nil;
 static NSString *const kMPVungleRewardedAdCompletedView = @"completedView";
 static NSString *const kMPVungleAdUserDidDownloadKey = @"didDownload";
@@ -66,6 +68,11 @@ static const NSTimeInterval VungleInitTimeout = 2.0;
         if ([appId length] == 0) {
             appId = gAppId;
         }
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+        [[VungleSDK sharedSDK] performSelector:@selector(setPluginName:version:) withObject:@"mopub" withObject:VunglePluginVersion];
+#pragma clang diagnostic pop
 
         [[VungleSDK sharedSDK] startWithAppId:appId];
         [[VungleSDK sharedSDK] setDelegate:self];
