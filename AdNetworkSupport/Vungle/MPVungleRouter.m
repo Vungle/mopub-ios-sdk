@@ -70,20 +70,25 @@ static const NSTimeInterval VungleInitTimeout = 2.0;
         [[VungleSDK sharedSDK] startWithAppId:appId];
         [[VungleSDK sharedSDK] setDelegate:self];
 
-        self.isWaitingForInit = true;
+        self.isWaitingForInit = YES;
+        __weak MPVungleRouter *weakSelf = self;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(VungleInitTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            if (self.isWaitingForInit) {
-                self.isWaitingForInit = false;
-                [self.delegate vungleAdDidFailToLoad:nil];
+            MPVungleRouter *strongSelf = weakSelf;
+            if (strongSelf) {
+                if (strongSelf.isWaitingForInit) {
+                    strongSelf.isWaitingForInit = NO;
+                    [strongSelf.delegate vungleAdDidFailToLoad:nil];
+                }
             }
         });
     });
 
     if (!self.isWaitingForInit) {
-        if ([[VungleSDK sharedSDK] isAdPlayable])
+        if ([[VungleSDK sharedSDK] isAdPlayable]) {
             [self.delegate vungleAdDidLoad];
-        else
+        } else {
             [self.delegate vungleAdDidFailToLoad:nil];
+        }
     }
 }
 
@@ -136,8 +141,7 @@ static const NSTimeInterval VungleInitTimeout = 2.0;
 
 - (void)clearDelegate:(id<MPVungleRouterDelegate>)delegate
 {
-    if (self.delegate == delegate)
-    {
+    if (self.delegate == delegate) {
         [self setDelegate:nil];
     }
 }
@@ -155,7 +159,7 @@ static const NSTimeInterval VungleInitTimeout = 2.0;
 - (void)vungleSDKAdPlayableChanged:(BOOL)isAdPlayable
 {
     if (self.isWaitingForInit && isAdPlayable) {
-        self.isWaitingForInit = false;
+        self.isWaitingForInit = NO;
         [self.delegate vungleAdDidLoad];
     }
 }
