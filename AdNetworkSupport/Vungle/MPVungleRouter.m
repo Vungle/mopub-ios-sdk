@@ -12,7 +12,7 @@
 #import "MPRewardedVideoError.h"
 #import "MPRewardedVideo.h"
 
-static NSString * const VunglePluginVersion = @"1_0_0";
+static NSString * const VunglePluginVersion = @"1_0_1";
 
 static NSString *gAppId = nil;
 static NSString *const kMPVungleRewardedAdCompletedView = @"completedView";
@@ -186,13 +186,6 @@ static const NSTimeInterval VungleInitTimeout = 2.0;
         [self.delegate vungleAdShouldRewardUser];
     }
 
-    if (!willPresentProductSheet) {
-        [self vungleAdDidFinish];
-    }
-}
-
-- (void)vungleSDKwillCloseProductSheet:(id)productSheet
-{
     [self vungleAdDidFinish];
 }
 
