@@ -55,7 +55,12 @@
 
 - (void)handleAdPlayedForCustomEventNetwork
 {
-    //empty implementation
+    // If we no longer have an ad available, report back up to the application that this ad expired.
+    // We receive this message only when this ad has reported an ad has loaded and another ad unit
+    // has played a video for the same ad network.
+    if (![self hasAdAvailable]) {
+        [self.delegate rewardedVideoDidExpireForCustomEvent:self];
+    }
 }
 
 #pragma mark - MPVungleDelegate
