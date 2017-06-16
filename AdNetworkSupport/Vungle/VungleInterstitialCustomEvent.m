@@ -54,7 +54,7 @@ static NSString *const kVunglePlacementIdKey = @"pid";
 
 - (void)handleVungleAdViewWillClose
 {
-    MPLogInfo(@"Vungle video interstitial did disappear");
+    MPLogInfo(@"Vungle video interstitial will disappear");
 
     [self.delegate interstitialCustomEventWillDisappear:self];
     [self.delegate interstitialCustomEventDidDisappear:self];
