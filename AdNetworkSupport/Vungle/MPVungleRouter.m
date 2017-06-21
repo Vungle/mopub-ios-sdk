@@ -213,7 +213,9 @@ typedef NS_ENUM(NSUInteger, SDKInitializeState) {
 }
 
 - (void)clearDelegateForPlacementId:(NSString *)placementId {
-    [self.delegatesDic removeObjectForKey:placementId];
+    if (placementId != nil) {
+        [self.delegatesDic removeObjectForKey:placementId];
+    }
 }
 
 - (void)clearWaitingList {
