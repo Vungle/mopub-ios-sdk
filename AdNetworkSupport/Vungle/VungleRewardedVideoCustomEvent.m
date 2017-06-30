@@ -13,34 +13,36 @@
 #import "MPRewardedVideoError.h"
 #import "VungleInstanceMediationSettings.h"
 
+static NSString *const kVunglePlacementIdKey = @"pid";
+
 @interface VungleRewardedVideoCustomEvent ()  <MPVungleRouterDelegate>
+
+@property (nonatomic, copy) NSString *placementId;
 
 @end
 
 @implementation VungleRewardedVideoCustomEvent
 
-- (void)dealloc
-{
-    [[MPVungleRouter sharedRouter] clearDelegate:self];
-}
 
 - (void)requestRewardedVideoWithCustomEventInfo:(NSDictionary *)info
 {
+    self.placementId = [info objectForKey:kVunglePlacementIdKey];
+    
     [[MPVungleRouter sharedRouter] requestRewardedVideoAdWithCustomEventInfo:info delegate:self];
 }
 
 - (BOOL)hasAdAvailable
 {
-    return [[VungleSDK sharedSDK] isAdPlayable];
+    return [[VungleSDK sharedSDK] isAdCachedForPlacementID:self.placementId];
 }
 
 - (void)presentRewardedVideoFromViewController:(UIViewController *)viewController
 {
-    if ([[MPVungleRouter sharedRouter] isAdAvailable]) {
+    if ([[MPVungleRouter sharedRouter] isAdAvailableForPlacementId:self.placementId]) {
         VungleInstanceMediationSettings *settings = [self.delegate instanceMediationSettingsForClass:[VungleInstanceMediationSettings class]];
 
         NSString *customerId = [self.delegate customerIdForRewardedVideoCustomEvent:self];
-        [[MPVungleRouter sharedRouter] presentRewardedVideoAdFromViewController:viewController customerId:customerId settings:settings delegate:self];
+        [[MPVungleRouter sharedRouter] presentRewardedVideoAdFromViewController:viewController customerId:customerId settings:settings forPlacementId:self.placementId];
     } else {
         MPLogInfo(@"Failed to show Vungle rewarded video: Vungle now claims that there is no available video ad.");
         NSError *error = [NSError errorWithDomain:MoPubRewardedVideoAdsSDKDomain code:MPRewardedVideoAdErrorNoAdsAvailable userInfo:nil];
@@ -50,7 +52,7 @@
 
 - (void)handleCustomEventInvalidated
 {
-    [[MPVungleRouter sharedRouter] clearDelegate:self];
+    [[MPVungleRouter sharedRouter] clearDelegateForPlacementId:self.placementId];
 }
 
 - (void)handleAdPlayedForCustomEventNetwork
