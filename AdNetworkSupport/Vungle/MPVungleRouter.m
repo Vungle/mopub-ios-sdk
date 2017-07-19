@@ -27,7 +27,6 @@ typedef NS_ENUM(NSUInteger, SDKInitializeState) {
 @interface MPVungleRouter ()
 
 @property (nonatomic, copy) NSString *vungleAppID;
-@property (nonatomic, assign) BOOL isWaitingForInit;
 @property (nonatomic, assign) BOOL isAdPlaying;
 @property (nonatomic, assign) SDKInitializeState sdkInitializeState;
 
@@ -45,6 +44,7 @@ typedef NS_ENUM(NSUInteger, SDKInitializeState) {
         
         self.delegatesDic = [NSMutableDictionary dictionary];
         self.waitingListDic = [NSMutableDictionary dictionary];
+        self.isAdPlaying = NO;
     }
     return self;
 }
@@ -54,7 +54,7 @@ typedef NS_ENUM(NSUInteger, SDKInitializeState) {
 }
 
 - (void)requestInterstitialAdWithCustomEventInfo:(NSDictionary *)info delegate:(id<MPVungleRouterDelegate>)delegate {
-    if (!self.isAdPlaying && [self validateInfoData:info]) {
+    if ([self validateInfoData:info]) {
         if (self.sdkInitializeState == SDKInitializeStateNotInitialized) {
             [self.waitingListDic setObject:delegate forKey:[info objectForKey:kVunglePlacementIdKey]];
             [self requestAdWithCustomEventInfo:info delegate:delegate];
@@ -72,7 +72,7 @@ typedef NS_ENUM(NSUInteger, SDKInitializeState) {
 }
 
 - (void)requestRewardedVideoAdWithCustomEventInfo:(NSDictionary *)info delegate:(id<MPVungleRouterDelegate>)delegate {
-    if (!self.isAdPlaying && [self validateInfoData:info]) {
+    if ([self validateInfoData:info]) {
         if (self.sdkInitializeState == SDKInitializeStateNotInitialized) {
             [self.waitingListDic setObject:delegate forKey:[info objectForKey:kVunglePlacementIdKey]];
             [self requestAdWithCustomEventInfo:info delegate:delegate];
@@ -136,6 +136,7 @@ typedef NS_ENUM(NSUInteger, SDKInitializeState) {
         BOOL success = [[VungleSDK sharedSDK] playAd:viewController options:nil placementID:placementId error:&error];
         if (!success) {
             [[self.delegatesDic objectForKey:placementId] vungleAdDidFailToPlay:nil];
+            self.isAdPlaying = NO;
         }
     } else {
         [[self.delegatesDic objectForKey:placementId] vungleAdDidFailToPlay:nil];
@@ -155,6 +156,7 @@ typedef NS_ENUM(NSUInteger, SDKInitializeState) {
         BOOL success = [[VungleSDK sharedSDK] playAd:viewController options:options placementID:placementId error:nil];
         if (!success) {
             [[self.delegatesDic objectForKey:placementId] vungleAdDidFailToPlay:nil];
+            self.isAdPlaying = NO;
         }
     } else {
         NSError *error = [NSError errorWithDomain:MoPubRewardedVideoAdsSDKDomain code:MPRewardedVideoAdErrorNoAdsAvailable userInfo:nil];
@@ -249,7 +251,6 @@ typedef NS_ENUM(NSUInteger, SDKInitializeState) {
 
 - (void)vungleAdPlayabilityUpdate:(BOOL)isAdPlayable placementID:(NSString *)placementID {
     if (isAdPlayable) {
-        self.isWaitingForInit = NO;
         [[self.delegatesDic objectForKey:placementID] vungleAdDidLoad];
     }
     else {
