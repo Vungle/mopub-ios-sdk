@@ -8,23 +8,27 @@
 #import <Foundation/Foundation.h>
 #import <VungleSDK/VungleSDK.h>
 
+extern NSString *const kVunglePlacementIdKey;
+extern NSString *const kVungleFlexViewAutoDismissSeconds;
+extern NSString *const kVungleUserId;
+extern NSString *const kVungleOrdinal;
+extern NSString *const kVungleViralUser;
+
 @protocol MPVungleRouterDelegate;
 @class VungleInstanceMediationSettings;
 
 @interface MPVungleRouter : NSObject <VungleSDKDelegate>
 
-@property (nonatomic, weak) id<MPVungleRouterDelegate> delegate;
-
-+ (void)setAppId:(NSString *)appId;
-
 + (MPVungleRouter *)sharedRouter;
 
+- (void)initializeSdkWithInfo:(NSDictionary *)info;
 - (void)requestInterstitialAdWithCustomEventInfo:(NSDictionary *)info delegate:(id<MPVungleRouterDelegate>)delegate;
 - (void)requestRewardedVideoAdWithCustomEventInfo:(NSDictionary *)info delegate:(id<MPVungleRouterDelegate>)delegate;
-- (BOOL)isAdAvailable;
-- (void)presentInterstitialAdFromViewController:(UIViewController *)viewController withDelegate:(id<MPVungleRouterDelegate>)delegate;
-- (void)presentRewardedVideoAdFromViewController:(UIViewController *)viewController customerId:(NSString *)customerId settings:(VungleInstanceMediationSettings *)settings delegate:(id<MPVungleRouterDelegate>)delegate;
-- (void)clearDelegate:(id<MPVungleRouterDelegate>)delegate;
+- (BOOL)isAdAvailableForPlacementId:(NSString *)placementId;
+- (void)presentInterstitialAdFromViewController:(UIViewController *)viewController options:(NSDictionary *)options forPlacementId:(NSString *)placementId;
+- (void)presentRewardedVideoAdFromViewController:(UIViewController *)viewController customerId:(NSString *)customerId settings:(VungleInstanceMediationSettings *)settings forPlacementId:(NSString *)placementId eventInfo:(NSDictionary *)info;
+- (void)clearDelegateForPlacementId:(NSString *)placementId;
+
 @end
 
 @protocol MPVungleRouterDelegate <NSObject>
