@@ -20,7 +20,6 @@ static NSString *const kVunglePlacementIdsKey = @"pids";
 NSString *const kVungleFlexViewAutoDismissSeconds = @"flexViewAutoDismissSeconds";
 NSString *const kVungleUserId = @"userId";
 NSString *const kVungleOrdinal = @"ordinal";
-NSString *const kVungleViralUser = @"viralUser";
 
 typedef NS_ENUM(NSUInteger, SDKInitializeState) {
     SDKInitializeStateNotInitialized,
@@ -164,9 +163,6 @@ typedef NS_ENUM(NSUInteger, SDKInitializeState) {
             options[VunglePlayAdOptionKeyOrdinal] = @(settings.ordinal);
         if (settings.flexViewAutoDismissSeconds > 0)
             options[VunglePlayAdOptionKeyFlexViewAutoDismissSeconds] = @(settings.flexViewAutoDismissSeconds);
-        if (settings.viralUser) {
-            [[VungleSDK sharedSDK] setViralUser:settings.viralUser];
-        }
 
         BOOL success = [[VungleSDK sharedSDK] playAd:viewController options:options placementID:placementId error:nil];
         if (!success) {

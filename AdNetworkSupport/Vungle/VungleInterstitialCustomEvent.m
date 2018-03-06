@@ -70,14 +70,6 @@
             }
         }
 
-        // Viral User
-        if ([[NSUserDefaults standardUserDefaults] boolForKey:kVungleViralUser]) {
-            BOOL viralUser = [[NSUserDefaults standardUserDefaults] boolForKey:kVungleViralUser];
-            if (viralUser) {
-                [[VungleSDK sharedSDK] setViralUser:viralUser];
-            }
-        }
-        
         self.options = options.count ? options : nil;
         
         [[MPVungleRouter sharedRouter] presentInterstitialAdFromViewController:rootViewController options:self.options forPlacementId:self.placementId];

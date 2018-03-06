@@ -30,6 +30,4 @@
 
 @property (nonatomic, assign) NSTimeInterval flexViewAutoDismissSeconds;
 
-@property (nonatomic, assign) BOOL viralUser;
-
 @end
